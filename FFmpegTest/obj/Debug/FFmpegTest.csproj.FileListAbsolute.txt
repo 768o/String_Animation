@@ -1,0 +1,6 @@
+H:\C#\FFmpegTest\FFmpegTest\bin\Debug\FFmpegTest.exe.config
+H:\C#\FFmpegTest\FFmpegTest\bin\Debug\FFmpegTest.exe
+H:\C#\FFmpegTest\FFmpegTest\bin\Debug\FFmpegTest.pdb
+H:\C#\FFmpegTest\FFmpegTest\obj\Debug\FFmpegTest.csprojAssemblyReference.cache
+H:\C#\FFmpegTest\FFmpegTest\obj\Debug\FFmpegTest.exe
+H:\C#\FFmpegTest\FFmpegTest\obj\Debug\FFmpegTest.pdb
