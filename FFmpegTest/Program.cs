@@ -1,40 +1,59 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace FFmpegTest
 {
     class Program
     {
+        private static readonly string InputPath = @"D:\VideoToStr\2.mp4";//视频路径
+        private static readonly string OutputPath = @"D:\VideoToStr\Output\";//输出图片文件夹
+        private static readonly string OutputTxtPath = @"D:\VideoToStr\Output\output.txt";//输出文本路径
         static StreamReader sr;
         static void Main(string[] args)
         {
-            GetPicFromVideo(@"C:\Users\L-KAMI\Desktop\BedApple\BedApple.flv", "705x576", "1");
-            ImagePaint();
-            Console.WindowHeight = 48;
+            if (!Directory.Exists(OutputPath))
+            {
+                try
+                {
+                    Directory.CreateDirectory(OutputPath);
+                }
+                catch (Exception)
+                {
+                }
+            }
             Console.WindowWidth = 150;
-            PlayImageString();
+            Console.WindowHeight = 48;
+            GetPicFromVideo(InputPath, 720, 576, 20);
+            ImagePaint((720 / 150) + 1, (576 / 48));
+            PlayImageString(20 * 30);
+            Console.WriteLine("132");
+            Console.ReadKey();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="VideoName">路径</param>
+        /// <param name="vWidth">分辨率宽</param>
+        /// <param name="vHeight">分辨率高</param>
+        /// <param name="time">时长</param>
+        /// <param name="CutTimeFrame"></param>
+        /// <returns></returns>
         //将视频逐帧提取成图片
-        static public string GetPicFromVideo(string VideoName, string WidthAndHeight, String CutTimeFrame)
+        static public bool GetPicFromVideo(string VideoName, int vWidth, int vHeight,int time, string CutTimeFrame = "1")
         {
-            string ffmpeg = @"H:\ffmpeg\bin\ffmpeg.exe";
-            string PicName = VideoName + ".jpg";
-            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo(ffmpeg);
-            startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+            ProcessStartInfo startInfo = 
+                new ProcessStartInfo(AppDomain.CurrentDomain.BaseDirectory + @"ffmpeg\ffmpeg.exe");
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.Arguments = " -i " + VideoName
-                + " -r 18"
+                + " -r 30"
                 + " -y -f image2 -ss " + CutTimeFrame
-                + " -t 513 -s " + WidthAndHeight
-                + @" C:\Users\L-KAMI\Desktop\BedApple\%d.jpg";
+                + " -t " + time + " -s " + vWidth + "x" + vHeight 
+                + " " + OutputPath + "%d.jpg";
 
             try
             {
@@ -43,105 +62,91 @@ namespace FFmpegTest
             }
             catch (Exception)
             {
-                return "";
+                return false;
             }
 
-            if (System.IO.File.Exists(PicName))
-            {
-                return PicName;
-            }
-
-            return "";
+            return true;
         }
 
         //将图片转为字符
-        static public void ImagePaint()
+        static public void ImagePaint(int w, int h)
         {
             int page = 0;
+            if (File.Exists(OutputTxtPath))
+            {
+                File.Delete(OutputTxtPath);
+            }
             while (true)
             {
                 page++;
                 Console.WriteLine(page);
-                if (!File.Exists(@"C:\Users\L-KAMI\Desktop\BedApple\"+page+".jpg"))
+                var jpgPath = OutputPath + page + ".jpg";
+                if (!File.Exists(jpgPath))
                 {
                     return;
                 }
-                
                 #region
-                Bitmap bitmap = new Bitmap(@"C:\Users\L-KAMI\Desktop\BedApple\" + page + ".jpg");
-
+                Bitmap bitmap = new Bitmap(jpgPath);
                 StringBuilder sb = new StringBuilder();
                 string replaceChar = "@*#$%XB0H?OC7>+v=~^:_-'`. ";
+                var row = 0;
 
-                
-                for (int i = 0; i < bitmap.Height; i += 12)
+                for (int i = 0; i < bitmap.Height; i += h)
                 {
-                    for (int j = 0; j < bitmap.Width; j += 6)
+                    for (int j = 0; j < bitmap.Width; j += w)
                     {
                         //获取当前点的color对象
                         Color c = bitmap.GetPixel(j, i);
-
                         //计算灰度化后的rgb值
                         int rgb = (int)(c.R * .3 + c.G * .59 + c.B * .11);
-
                         //计算出replaceChar中要替换的字符index
                         //所以根据当前灰度所占总rgb的比例(rgb值最大为255，为了防止超出索引界限所以/256.0)
                         //（肯定是小于1的小数）乘以总共要替换字符的字符数，获取当前灰度程度在字符串中的复杂程度
                         int index = (int)(rgb / 256.0 * replaceChar.Length);
-
                         //追加进入sb
                         sb.Append(replaceChar[index]);
                     }
-
+                    row++;
                     sb.Append("\r\n");
                 }
+                Console.WriteLine(row);
 
-                if (!File.Exists(@"C:\Users\L-KAMI\Desktop\BedApple\test.txt"))
+                if (!File.Exists(OutputTxtPath))
                 {
-                    using (FileStream fs = new FileStream(@"C:\Users\L-KAMI\Desktop\BedApple\test.txt", FileMode.OpenOrCreate, FileAccess.Write))
+                    using (FileStream fs = new FileStream(OutputTxtPath, FileMode.OpenOrCreate, FileAccess.Write))
                     {
-                        //byte[] bs = Encoding.Default.GetBytes();
-
                         StreamWriter sw = new StreamWriter(fs);
                         sw.Write(sb.ToString());
                     }
                 }
                 else
                 {
-                    StreamWriter sw = File.AppendText(@"C:\Users\L-KAMI\Desktop\BedApple\test.txt");
+                    StreamWriter sw = File.AppendText(OutputTxtPath);
                     sw.Write("\n");
                     sw.Write(sb.ToString());
                     sw.Close();
                 }
                 #endregion
-
-
             }
         }
 
-        static public void PlayImageString()
+        static public void PlayImageString(int count)
         {
-            FileStream fs = new FileStream(@"C:\Users\L-KAMI\Desktop\BedApple\test.txt", FileMode.Open, FileAccess.Read);
+            FileStream fs = new FileStream(OutputTxtPath, FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(fs);
             string m = "";
-
-            for (int i = 7; i < 256563; i++)
+            for (int i = 0; i < count * 48; i++)
             {
                 m += sr.ReadLine();
                 m += "\n";
-                
 
                 if (i % 49 == 0)
                 {
-                    
                     Console.WriteLine(m);
-                    
-                    Thread.Sleep(25);
+                    Thread.Sleep(33);
                     m = "";
                 }
-                
             }
-            
         }
     }
 }
