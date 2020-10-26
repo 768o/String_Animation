@@ -26,9 +26,9 @@ namespace FFmpegTest
                 }
             }
             Console.WindowWidth = 150;
-            Console.WindowHeight = 48;
+            Console.WindowHeight = 49;
             GetPicFromVideo(InputPath, 720, 576, 20);
-            ImagePaint((720 / 150) + 1, (576 / 48));
+            ImagePaint((720 / 150) + 1, (576 / (49-1)));
             PlayImageString(20 * 30);
             Console.WriteLine("132");
             Console.ReadKey();
@@ -89,7 +89,6 @@ namespace FFmpegTest
                 Bitmap bitmap = new Bitmap(jpgPath);
                 StringBuilder sb = new StringBuilder();
                 string replaceChar = "@*#$%XB0H?OC7>+v=~^:_-'`. ";
-                var row = 0;
 
                 for (int i = 0; i < bitmap.Height; i += h)
                 {
@@ -106,10 +105,8 @@ namespace FFmpegTest
                         //追加进入sb
                         sb.Append(replaceChar[index]);
                     }
-                    row++;
                     sb.Append("\r\n");
                 }
-                Console.WriteLine(row);
 
                 if (!File.Exists(OutputTxtPath))
                 {
@@ -117,12 +114,12 @@ namespace FFmpegTest
                     {
                         StreamWriter sw = new StreamWriter(fs);
                         sw.Write(sb.ToString());
+                        sw.Close();
                     }
                 }
                 else
                 {
                     StreamWriter sw = File.AppendText(OutputTxtPath);
-                    sw.Write("\n");
                     sw.Write(sb.ToString());
                     sw.Close();
                 }
@@ -135,14 +132,14 @@ namespace FFmpegTest
             FileStream fs = new FileStream(OutputTxtPath, FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(fs);
             string m = "";
-            for (int i = 0; i < count * 48; i++)
+            for (int i = 1; i < count * 48; i++)
             {
                 m += sr.ReadLine();
                 m += "\n";
 
-                if (i % 49 == 0)
+                if (i % 48 == 0)
                 {
-                    Console.WriteLine(m);
+                    Console.Write(m);
                     Thread.Sleep(33);
                     m = "";
                 }
