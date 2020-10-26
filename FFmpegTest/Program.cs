@@ -12,6 +12,7 @@ namespace FFmpegTest
         private static readonly string InputPath = @"D:\VideoToStr\2.mp4";//视频路径
         private static readonly string OutputPath = @"D:\VideoToStr\Output\";//输出图片文件夹
         private static readonly string OutputTxtPath = @"D:\VideoToStr\Output\output.txt";//输出文本路径
+        private static readonly string OutputJsonPath = @"D:\VideoToStr\Output\output.json";//输出Json路径
         static StreamReader sr;
         static void Main(string[] args)
         {
@@ -29,8 +30,7 @@ namespace FFmpegTest
             Console.WindowHeight = 49;
             GetPicFromVideo(InputPath, 720, 576, 20);
             ImagePaint((720 / 150) + 1, (576 / (49-1)));
-            PlayImageString(20 * 30);
-            Console.WriteLine("132");
+            //PlayImageString(20 * 30);
             Console.ReadKey();
         }
 
@@ -76,6 +76,10 @@ namespace FFmpegTest
             {
                 File.Delete(OutputTxtPath);
             }
+            if (File.Exists(OutputJsonPath))
+            {
+                File.Delete(OutputJsonPath);
+            }
             while (true)
             {
                 page++;
@@ -83,11 +87,15 @@ namespace FFmpegTest
                 var jpgPath = OutputPath + page + ".jpg";
                 if (!File.Exists(jpgPath))
                 {
+                    StreamWriter end = File.AppendText(OutputJsonPath);
+                    end.Write("\"");
+                    end.Close();
                     return;
                 }
                 #region
                 Bitmap bitmap = new Bitmap(jpgPath);
                 StringBuilder sb = new StringBuilder();
+                StringBuilder jsonSb = new StringBuilder();
                 string replaceChar = "@*#$%XB0H?OC7>+v=~^:_-'`. ";
 
                 for (int i = 0; i < bitmap.Height; i += h)
@@ -104,7 +112,9 @@ namespace FFmpegTest
                         int index = (int)(rgb / 256.0 * replaceChar.Length);
                         //追加进入sb
                         sb.Append(replaceChar[index]);
+                        jsonSb.Append(replaceChar[index]);
                     }
+                    jsonSb.Append("<br/>");
                     sb.Append("\r\n");
                 }
 
@@ -123,6 +133,27 @@ namespace FFmpegTest
                     sw.Write(sb.ToString());
                     sw.Close();
                 }
+
+                if (!File.Exists(OutputJsonPath))
+                {
+                    using (FileStream fs = new FileStream(OutputJsonPath, FileMode.OpenOrCreate, FileAccess.Write))
+                    {
+                        StreamWriter sw = new StreamWriter(fs);
+                        sw.Write("var json = \"");
+                        sw.Write(jsonSb.ToString());
+                        sw.Write("");
+                        sw.Write("￥");
+                        sw.Close();
+                    }
+                }
+                else
+                {
+                    StreamWriter sw = File.AppendText(OutputJsonPath);
+                    sw.Write(jsonSb.ToString());
+                    sw.Write("￥");
+                    sw.Close();
+                }
+
                 #endregion
             }
         }

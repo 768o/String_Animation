@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <script src="../animation/js/jquery.min.js"></script>
+        <script src="../animation/js/output.js"></script>
+        <style>
+            #Context{
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <code id="Context"></code>
+    </body>
+    <script>
+        $(function(){
+            var frames = json.split('￥');
+            console.log(frames.length)
+            var i = 0;
+            setInterval(function(){
+                var frame = frames[i];
+                $("#Context").html(frame)
+                i++;
+            }, 33)
+        })
+    </script>
+</html>
